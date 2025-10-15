@@ -1,0 +1,20 @@
+{
+	"node": "n8n-nodes-base.Appwrite",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": [
+		"Database"
+	],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://appwrite.io/docs/getting-started-for-server"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://appwrite.io/docs"
+			}
+		]
+	}
+}

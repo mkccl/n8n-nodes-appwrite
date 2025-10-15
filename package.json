@@ -1,0 +1,54 @@
+{
+	"name": "n8n-nodes-appwrite",
+	"version": "0.1.0",
+	"description": "n8n node for Appwrite",
+	"keywords": [
+		"n8n-community-node-package",
+		"appwrite",
+		"database"
+	],
+	"license": "MIT",
+	"homepage": "",
+	"author": {
+		"name": "Michael Krause",
+		"email": "Michael.Krause@e-mail.de"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/hungtidus/n8n-nodes-appwrite.git"
+	},
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc && gulp build:icons",
+		"build:watch": "tsc --watch & gulp build:icons --watch",
+		"dev": "tsc --watch",
+		"format": "prettier nodes credentials --write",
+		"lint": "eslint nodes credentials"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/AppwriteApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Appwrite/Appwrite.node.js"
+		]
+	},
+	"devDependencies": {
+		"@types/express": "^4.17.6",
+		"@types/request-promise-native": "~1.0.15",
+		"@typescript-eslint/parser": "~5.45",
+		"eslint-plugin-n8n-nodes-base": "^1.0.0",
+		"gulp": "^4.0.2",
+		"n8n-core": "^0.125.0",
+		"n8n-workflow": "^0.107.0",
+		"prettier": "^2.7.1",
+		"typescript": "~4.8.4"
+	},
+	"dependencies": {
+		"node-appwrite": "^20.2.1"
+	}
+}
