@@ -1,5 +1,8 @@
 # n8n-nodes-appwrite-io
 
+![SEE IT IN ACTION](https://www.youtube.com/watch?v=m1XgTgTuDoI)
+
+
 This is an n8n community node that lets you use [Appwrite](https://appwrite.io) in your n8n workflows.
 
 Appwrite is an open-source backend-as-a-service platform that provides developers with a set of APIs and tools to build secure and scalable applications. This node allows you to interact with Appwrite's database functionality directly from n8n.
