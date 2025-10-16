@@ -15,9 +15,9 @@ Appwrite is an open-source backend-as-a-service platform that provides developer
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+This package is available on npm and can be installed in your n8n instance.
 
-### Community Node Installation
+### Installation via n8n Community Nodes (Recommended)
 
 1. Go to **Settings > Community Nodes** in your n8n instance
 2. Select **Install**
@@ -26,6 +26,70 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 5. Select **Install**
 
 After installation, the Appwrite node will be available in your node palette.
+
+### Manual Installation (Alternative Method)
+
+If you're running n8n via npm or have access to the installation directory:
+
+#### For npm-based n8n installations:
+
+1. Navigate to your n8n installation directory or global node_modules:
+   ```bash
+   cd ~/.n8n/
+   ```
+
+2. Install the package:
+   ```bash
+   npm install n8n-nodes-appwrite-io
+   ```
+
+3. Restart n8n:
+   ```bash
+   n8n start
+   ```
+
+#### For Docker installations:
+
+Create a `package.json` file with your custom nodes and mount it:
+
+```json
+{
+  "name": "n8n-custom-nodes",
+  "version": "1.0.0",
+  "description": "Custom nodes for n8n",
+  "dependencies": {
+    "n8n-nodes-appwrite-io": "^0.1.0"
+  }
+}
+```
+
+Then update your docker run command or docker-compose.yml to install custom nodes:
+
+```bash
+docker run -it --rm \
+  --name n8n \
+  -p 5678:5678 \
+  -v ~/.n8n:/home/node/.n8n \
+  -v $(pwd)/package.json:/home/node/package.json \
+  docker.n8n.io/n8nio/n8n \
+  npm install --prefix /home/node && n8n start
+```
+
+Or in docker-compose.yml:
+```yaml
+version: '3.8'
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    ports:
+      - "5678:5678"
+    volumes:
+      - ~/.n8n:/home/node/.n8n
+      - ./package.json:/home/node/package.json
+    command: sh -c "npm install --prefix /home/node && n8n start"
+```
+
+After installation using any method, the Appwrite node will be available in your node palette.
 
 ## Operations
 
