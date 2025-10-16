@@ -1,6 +1,7 @@
 # n8n-nodes-appwrite-io
 
-![SEE IT IN ACTION](https://www.youtube.com/watch?v=m1XgTgTuDoI)
+[![SEE IT IN ACTION](https://img.youtube.com/vi/m1XgTgTuDoI/0.jpg)](https://www.youtube.com/watch?v=m1XgTgTuDoI)
+
 
 
 This is an n8n community node that lets you use [Appwrite](https://appwrite.io) in your n8n workflows.
