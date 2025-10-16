@@ -670,7 +670,7 @@ export class Appwrite implements INodeType {
 										// Parse value based on attribute type
 										if (attributeType === 'boolean') {
 											// Convert string to boolean
-											documentData[fieldName] = fieldValue === 'true' || fieldValue === '1' || fieldValue === 1 || fieldValue === true;
+											documentData[fieldName] = fieldValue === 'true' || fieldValue === '1';
 										} else if (attributeType === 'integer') {
 											// Convert to integer
 											documentData[fieldName] = parseInt(fieldValue as string, 10);
