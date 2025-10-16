@@ -49,9 +49,26 @@ The List operation supports two query modes:
 
 2. **Custom Query**: Write custom Appwrite queries directly using the Query API syntax
 
-### Dynamic Collection Selector
+### Smart Features
 
+#### Dynamic Collection Selector
 The node features a dynamic collection dropdown that automatically fetches and displays all available collections from your Appwrite database. No more copying and pasting collection IDs!
+
+#### Schema-Based Document Creation
+When creating documents, choose between two input modes:
+
+1. **Auto-Map from Collection Schema** (Recommended for beginners)
+   - Automatically loads all attributes from your selected collection
+   - Shows field type for each attribute (e.g., "email (string)", "age (integer)")
+   - Clearly marks required fields with a `[Required]` label
+   - Excludes Appwrite system fields (`$id`, `$createdAt`, `$updatedAt`, etc.)
+   - Build documents field-by-field with auto-complete
+   - Supports n8n expressions in field values
+
+2. **JSON Input** (For advanced users)
+   - Traditional JSON input for maximum flexibility
+   - Use expressions like `{{ $json }}` to map data from previous nodes
+   - Full control over document structure
 
 ## Credentials
 
@@ -111,15 +128,30 @@ The credentials will be tested automatically. If successful, you're ready to use
 
 ## Usage
 
-### Example 1: Create a Document
+### Example 1: Create a Document (Schema Mode)
 
 1. Add the Appwrite node to your workflow
 2. Select **Document** as the resource
 3. Select **Create** as the operation
 4. Choose your **Collection** from the dropdown
-5. Enter **Document Data** as JSON (or use expressions like `{{ $json }}` to pass data from previous nodes)
-6. Optionally, add **Permissions** as a JSON array (e.g., `["read(\"any\")"]`)
-7. Execute the node
+5. Select **Auto-Map from Collection Schema** as the Data Input Mode
+6. Click **Add Field** to add document fields
+7. Select a **Field Name** from the dropdown (shows type and required status)
+8. Enter the **Field Value** (supports expressions like `{{ $json.email }}`)
+9. Repeat steps 6-8 for each field you want to populate
+10. Optionally, add **Permissions** as a JSON array (e.g., `["read(\"any\")"]`)
+11. Execute the node
+
+### Example 1b: Create a Document (JSON Mode)
+
+1. Add the Appwrite node to your workflow
+2. Select **Document** as the resource
+3. Select **Create** as the operation
+4. Choose your **Collection** from the dropdown
+5. Select **JSON** as the Data Input Mode
+6. Enter **Document Data** as JSON (or use expressions like `{{ $json }}` to pass data from previous nodes)
+7. Optionally, add **Permissions** as a JSON array (e.g., `["read(\"any\")"]`)
+8. Execute the node
 
 ### Example 2: List Documents with Filters
 

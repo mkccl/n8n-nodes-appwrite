@@ -219,7 +219,8 @@ export class Appwrite implements INodeType {
 								name: 'fieldValue',
 								type: 'string',
 								default: '',
-								description: 'The value for this field. Supports expressions.',
+								description: 'The value for this field. For strings, enter the text directly. For numbers, enter digits. For booleans, enter "true" or "false". For JSON arrays/objects, use valid JSON syntax.',
+								placeholder: 'true',
 							},
 						],
 					},
@@ -647,16 +648,54 @@ export class Appwrite implements INodeType {
 						let documentData: IDataObject;
 
 						if (dataInputMode === 'schema') {
-							// Schema mode: build from fields
+							// Schema mode: build from fields with type conversion
 							const documentFieldsData = this.getNodeParameter('documentFields', i, {}) as IDataObject;
 							documentData = {};
+
+							// Fetch collection schema to get attribute types
+							const collection = await databases.getCollection(databaseId, collectionId);
+							const attributeTypes: Record<string, string> = {};
+							for (const attr of collection.attributes) {
+								attributeTypes[attr.key] = attr.type;
+							}
 
 							if (documentFieldsData.field && Array.isArray(documentFieldsData.field)) {
 								for (const field of documentFieldsData.field) {
 									const fieldName = field.fieldName as string;
-									const fieldValue = field.fieldValue;
-									if (fieldName) {
-										documentData[fieldName] = fieldValue;
+									const fieldValue = field.fieldValue as string;
+
+									if (fieldName && fieldValue !== undefined && fieldValue !== null) {
+										const attributeType = attributeTypes[fieldName];
+
+										// Parse value based on attribute type
+										if (attributeType === 'boolean') {
+											// Convert string to boolean
+											documentData[fieldName] = fieldValue === 'true' || fieldValue === '1' || fieldValue === 1 || fieldValue === true;
+										} else if (attributeType === 'integer') {
+											// Convert to integer
+											documentData[fieldName] = parseInt(fieldValue as string, 10);
+										} else if (attributeType === 'double' || attributeType === 'float') {
+											// Convert to float
+											documentData[fieldName] = parseFloat(fieldValue as string);
+										} else if (attributeType === 'datetime') {
+											// Keep as is (should be ISO 8601 format string)
+											documentData[fieldName] = fieldValue;
+										} else if (attributeType === 'string' || attributeType === 'email' || attributeType === 'url' || attributeType === 'ip' || attributeType === 'enum') {
+											// Keep as string
+											documentData[fieldName] = fieldValue;
+										} else {
+											// For arrays and other types, try to parse as JSON if it looks like JSON
+											const strValue = String(fieldValue);
+											if (strValue.startsWith('[') || strValue.startsWith('{')) {
+												try {
+													documentData[fieldName] = JSON.parse(strValue);
+												} catch {
+													documentData[fieldName] = fieldValue;
+												}
+											} else {
+												documentData[fieldName] = fieldValue;
+											}
+										}
 									}
 								}
 							}
