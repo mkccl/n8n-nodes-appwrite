@@ -1,4 +1,4 @@
-# n8n-nodes-appwrite
+# n8n-nodes-appwrite-io
 
 This is an n8n community node that lets you use [Appwrite](https://appwrite.io) in your n8n workflows.
 
@@ -21,7 +21,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 1. Go to **Settings > Community Nodes** in your n8n instance
 2. Select **Install**
-3. Enter `n8n-nodes-appwrite` in **Enter npm package name**
+3. Enter `n8n-nodes-appwrite-io` in **Enter npm package name**
 4. Agree to the [risks](https://docs.n8n.io/integrations/community-nodes/risks/) of using community nodes
 5. Select **Install**
 
@@ -204,4 +204,4 @@ See the [CLAUDE.md](./CLAUDE.md) file for detailed development instructions.
 
 ## Feedback
 
-If you have any issues or feedback, please file an issue on the [GitHub repository](https://github.com/mkccl/n8n-nodes-appwrite/issues).
+If you have any issues or feedback, please file an issue on the [GitHub repository](https://github.com/mkccl/n8n-nodes-appwrite-io/issues).

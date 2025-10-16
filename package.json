@@ -1,21 +1,26 @@
 {
-	"name": "n8n-nodes-appwrite",
+	"name": "n8n-nodes-appwrite-io",
 	"version": "0.1.0",
-	"description": "n8n node for Appwrite",
+	"description": "n8n community node for Appwrite - interact with Appwrite databases directly from your n8n workflows with schema-based document creation",
 	"keywords": [
 		"n8n-community-node-package",
+		"n8n",
 		"appwrite",
-		"database"
+		"database",
+		"backend",
+		"baas",
+		"workflow",
+		"automation"
 	],
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://github.com/mkccl/n8n-nodes-appwrite-io#readme",
 	"author": {
 		"name": "Michael Krause",
 		"email": "Michael.Krause@e-mail.de"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/mkccl/n8n-nodes-appwrite.git"
+		"url": "https://github.com/mkccl/n8n-nodes-appwrite-io.git"
 	},
 	"main": "index.js",
 	"scripts": {
