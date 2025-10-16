@@ -1,10 +1,12 @@
 import {
 	IExecuteFunctions,
+	ILoadOptionsFunctions,
 } from 'n8n-core';
 
 import {
 	IDataObject,
 	INodeExecutionData,
+	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
@@ -84,9 +86,12 @@ export class Appwrite implements INodeType {
 
 			// Collection ID (required for all operations)
 			{
-				displayName: 'Collection ID',
+				displayName: 'Collection',
 				name: 'collectionId',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getCollections',
+				},
 				required: true,
 				displayOptions: {
 					show: {
@@ -94,7 +99,7 @@ export class Appwrite implements INodeType {
 					},
 				},
 				default: '',
-				placeholder: 'my-collection-ID',
+				description: 'The collection to work with',
 			},
 
 			// Document ID (for get operation)
@@ -130,7 +135,34 @@ export class Appwrite implements INodeType {
 				description: 'Unique document ID. Leave empty to auto-generate.',
 			},
 
-			// Document Data (for create operation) - now accepts object from previous node
+			// Data Input Mode (for create operation)
+			{
+				displayName: 'Data Input Mode',
+				name: 'dataInputMode',
+				type: 'options',
+				displayOptions: {
+					show: {
+						resource: ['document'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						name: 'Auto-Map from Collection Schema',
+						value: 'schema',
+						description: 'Fill in fields based on collection attributes',
+					},
+					{
+						name: 'JSON',
+						value: 'json',
+						description: 'Provide document data as JSON object',
+					},
+				],
+				default: 'schema',
+				description: 'How to input the document data',
+			},
+
+			// Document Data (JSON mode)
 			{
 				displayName: 'Document Data',
 				name: 'documentData',
@@ -140,11 +172,58 @@ export class Appwrite implements INodeType {
 					show: {
 						resource: ['document'],
 						operation: ['create'],
+						dataInputMode: ['json'],
 					},
 				},
 				default: '={}',
 				description: 'The document data as an object. Can reference input data with expressions.',
 				placeholder: '={{ $json }}',
+			},
+
+			// Document Fields (Schema mode)
+			{
+				displayName: 'Document Fields',
+				name: 'documentFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				displayOptions: {
+					show: {
+						resource: ['document'],
+						operation: ['create'],
+						dataInputMode: ['schema'],
+					},
+				},
+				default: {},
+				placeholder: 'Add Field',
+				description: 'Define the document data field by field',
+				options: [
+					{
+						name: 'field',
+						displayName: 'Field',
+						values: [
+							{
+								displayName: 'Field Name',
+								name: 'fieldName',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'getCollectionAttributes',
+									loadOptionsDependsOn: ['collectionId'],
+								},
+								default: '',
+								description: 'The field/attribute name',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'fieldValue',
+								type: 'string',
+								default: '',
+								description: 'The value for this field. Supports expressions.',
+							},
+						],
+					},
+				],
 			},
 
 			// Permissions (for create operations)
@@ -347,6 +426,83 @@ export class Appwrite implements INodeType {
 		],
 	};
 
+	methods = {
+		loadOptions: {
+			async getCollections(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				// Get credentials
+				const credentials = await this.getCredentials('appwriteApi');
+				const apiEndpoint = credentials.apiEndpoint as string;
+				const projectId = credentials.projectId as string;
+				const databaseId = credentials.databaseId as string;
+				const apiKey = credentials.apiKey as string;
+
+				// Initialize Appwrite client
+				const client = new Client()
+					.setEndpoint(apiEndpoint)
+					.setProject(projectId)
+					.setKey(apiKey);
+
+				const databases = new Databases(client);
+
+				try {
+					// Fetch collections from Appwrite
+					const response = await databases.listCollections(databaseId);
+
+					// Map collections to dropdown options
+					return response.collections.map((collection: any) => ({
+						name: collection.name,
+						value: collection.$id,
+					}));
+				} catch (error) {
+					throw new Error(`Failed to load collections: ${(error as Error).message}`);
+				}
+			},
+
+			async getCollectionAttributes(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const collectionId = this.getCurrentNodeParameter('collectionId') as string;
+
+				if (!collectionId) {
+					return [];
+				}
+
+				// Get credentials
+				const credentials = await this.getCredentials('appwriteApi');
+				const apiEndpoint = credentials.apiEndpoint as string;
+				const projectId = credentials.projectId as string;
+				const databaseId = credentials.databaseId as string;
+				const apiKey = credentials.apiKey as string;
+
+				// Initialize Appwrite client
+				const client = new Client()
+					.setEndpoint(apiEndpoint)
+					.setProject(projectId)
+					.setKey(apiKey);
+
+				const databases = new Databases(client);
+
+				try {
+					// Fetch collection details to get attributes
+					const collection = await databases.getCollection(databaseId, collectionId);
+
+					// Filter out system fields and map to options
+					const systemFields = ['$id', '$createdAt', '$updatedAt', '$permissions', '$databaseId', '$collectionId'];
+
+					return collection.attributes
+						.filter((attr: any) => !systemFields.includes(attr.key))
+						.map((attr: any) => {
+							const required = attr.required ? ' [Required]' : '';
+							return {
+								name: `${attr.key} (${attr.type})${required}`,
+								value: attr.key,
+							};
+						});
+				} catch (error) {
+					throw new Error(`Failed to load collection attributes: ${(error as Error).message}`);
+				}
+			},
+		},
+	};
+
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
@@ -484,18 +640,38 @@ export class Appwrite implements INodeType {
 					} else if (operation === 'create') {
 						// Create Document
 						let documentId = this.getNodeParameter('documentId', i) as string;
-						const documentDataJson = this.getNodeParameter('documentData', i) as string;
+						const dataInputMode = this.getNodeParameter('dataInputMode', i) as string;
 						const permissionsJson = this.getNodeParameter('permissions', i, '[]') as string;
 
-						// Parse document data - it should already be an object if using ={{ $json }}
+						// Build document data based on input mode
 						let documentData: IDataObject;
-						if (typeof documentDataJson === 'object') {
-							documentData = documentDataJson as IDataObject;
+
+						if (dataInputMode === 'schema') {
+							// Schema mode: build from fields
+							const documentFieldsData = this.getNodeParameter('documentFields', i, {}) as IDataObject;
+							documentData = {};
+
+							if (documentFieldsData.field && Array.isArray(documentFieldsData.field)) {
+								for (const field of documentFieldsData.field) {
+									const fieldName = field.fieldName as string;
+									const fieldValue = field.fieldValue;
+									if (fieldName) {
+										documentData[fieldName] = fieldValue;
+									}
+								}
+							}
 						} else {
-							try {
-								documentData = JSON.parse(documentDataJson as string);
-							} catch (error) {
-								throw new NodeOperationError(this.getNode(), 'Document Data must be valid JSON or an object', { itemIndex: i });
+							// JSON mode: parse JSON input
+							const documentDataJson = this.getNodeParameter('documentData', i) as string;
+
+							if (typeof documentDataJson === 'object') {
+								documentData = documentDataJson as IDataObject;
+							} else {
+								try {
+									documentData = JSON.parse(documentDataJson as string);
+								} catch (error) {
+									throw new NodeOperationError(this.getNode(), 'Document Data must be valid JSON or an object', { itemIndex: i });
+								}
 							}
 						}
 

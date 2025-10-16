@@ -15,7 +15,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/hungtidus/n8n-nodes-appwrite.git"
+		"url": "https://github.com/mkccl/n8n-nodes-appwrite.git"
 	},
 	"main": "index.js",
 	"scripts": {
